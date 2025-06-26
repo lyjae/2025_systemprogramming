@@ -1,0 +1,51 @@
+name: Autograding Tests
+'on':
+- workflow_dispatch
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: setup
+      id: setup
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: setup
+        setup-command: sudo apt update;
+        command: sudo apt install -y strace
+        timeout: 10
+    - name: test wc_mt
+      id: test-wc_mt
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: test wc_mt
+        setup-command: git pull; rm -rf test; git clone https://github.com/KNU-ELEC462/lab8-test.git
+          test
+        command: LAB_HOME=$(pwd) bash test/test.sh wc_mt
+        timeout: 10
+        max-score: 5
+    - name: test wc_mt_overlap
+      id: test-wc_mt_overlap
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: test wc_mt_overlap
+        setup-command: git pull; rm -rf test; git clone https://github.com/KNU-ELEC462/lab8-test.git
+          test
+        command: LAB_HOME=$(pwd) bash test/test.sh wc_mt_overlap
+        timeout: 10
+        max-score: 5
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        SETUP_RESULTS: "${{steps.setup.outputs.result}}"
+        TEST-WC_MT_RESULTS: "${{steps.test-wc_mt.outputs.result}}"
+        TEST-WC_MT_OVERLAP_RESULTS: "${{steps.test-wc_mt_overlap.outputs.result}}"
+      with:
+        runners: setup,test-wc_mt,test-wc_mt_overlap

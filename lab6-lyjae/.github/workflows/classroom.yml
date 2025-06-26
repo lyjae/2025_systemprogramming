@@ -1,0 +1,62 @@
+name: Autograding Tests
+'on':
+- workflow_dispatch
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: setup
+      id: setup
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: setup
+        setup-command: sudo apt update
+        command: sudo apt install -y expect
+        timeout: 10
+    - name: test wait
+      id: test-wait
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: test wait
+        setup-command: git pull; rm -rf test; git clone https://github.com/KNU-ELEC462/lab6-test.git
+          test
+        command: LAB_HOME=$(pwd) bash test/test.sh wait
+        timeout: 10
+        max-score: 3
+    - name: test psh2
+      id: test-psh2
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: test psh2
+        setup-command: git pull; rm -rf test; git clone https://github.com/KNU-ELEC462/lab6-test.git
+          test
+        command: LAB_HOME=$(pwd) bash test/test.sh psh2
+        timeout: 10
+        max-score: 3
+    - name: test psh3
+      id: test-psh3
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: test psh3
+        setup-command: git pull; rm -rf test; git clone https://github.com/KNU-ELEC462/lab6-test.git
+          test
+        command: LAB_HOME=$(pwd) bash test/test.sh psh3
+        timeout: 10
+        max-score: 4
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        SETUP_RESULTS: "${{steps.setup.outputs.result}}"
+        TEST-WAIT_RESULTS: "${{steps.test-wait.outputs.result}}"
+        TEST-PSH2_RESULTS: "${{steps.test-psh2.outputs.result}}"
+        TEST-PSH3_RESULTS: "${{steps.test-psh3.outputs.result}}"
+      with:
+        runners: setup,test-wait,test-psh2,test-psh3

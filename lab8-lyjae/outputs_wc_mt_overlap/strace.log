@@ -1,0 +1,7 @@
+strace: Process 1951 attached
+strace: Process 1952 attached
+strace: Process 1953 attached
+[pid  1951] +++ exited with 0 +++
+[pid  1953] +++ exited with 0 +++
+[pid  1952] +++ exited with 0 +++
++++ exited with 0 +++

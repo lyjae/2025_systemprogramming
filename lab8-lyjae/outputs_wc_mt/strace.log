@@ -1,0 +1,9 @@
+strace: Process 1767 attached
+strace: Process 1768 attached
+[pid  1767] +++ exited with 0 +++
+strace: Process 1769 attached
+[pid  1768] +++ exited with 0 +++
+strace: Process 1770 attached
+[pid  1769] +++ exited with 0 +++
+[pid  1770] +++ exited with 0 +++
++++ exited with 0 +++

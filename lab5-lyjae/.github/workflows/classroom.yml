@@ -1,0 +1,62 @@
+name: Autograding Tests
+'on':
+- workflow_dispatch
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: setup
+      id: setup
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: setup
+        setup-command: sudo apt update;
+        command: sudo apt install -y expect libncurses-dev;
+        timeout: 10
+    - name: test move
+      id: test-move
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: test move
+        setup-command: git pull; rm -rf test; git clone https://github.com/KNU-ELEC462/lab5-test.git
+          test
+        command: LAB_HOME=$(pwd) bash test/test.sh move
+        timeout: 10
+        max-score: 2
+    - name: test editor
+      id: test-editor
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: test editor
+        setup-command: git pull; rm -rf test; git clone https://github.com/KNU-ELEC462/lab5-test.git
+          test
+        command: LAB_HOME=$(pwd) bash test/test.sh editor
+        timeout: 10
+        max-score: 4
+    - name: test snake
+      id: test-snake
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: test snake
+        setup-command: git pull; rm -rf test; git clone https://github.com/KNU-ELEC462/lab5-test.git
+          test
+        command: LAB_HOME=$(pwd) bash test/test.sh snake
+        timeout: 10
+        max-score: 4
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        SETUP_RESULTS: "${{steps.setup.outputs.result}}"
+        TEST-MOVE_RESULTS: "${{steps.test-move.outputs.result}}"
+        TEST-EDITOR_RESULTS: "${{steps.test-editor.outputs.result}}"
+        TEST-SNAKE_RESULTS: "${{steps.test-snake.outputs.result}}"
+      with:
+        runners: setup,test-move,test-editor,test-snake

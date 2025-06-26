@@ -1,0 +1,52 @@
+name: Autograding Tests
+'on':
+- workflow_dispatch
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: setup
+      id: setup
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: setup
+        setup-command: ''
+        command: sudo apt update; sudo apt install -y build-essential expect qemu-system-misc
+          gcc-riscv64-unknown-elf
+        timeout: 10
+    - name: hello
+      id: hello
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: hello
+        setup-command: git pull; rm -rf test; git clone https://github.com/KNU-ELEC462/lab3-test.git
+          test; sudo rm -f xv6-riscv/user/hello.c; cp test/userprog/hello.c xv6-riscv/user/hello.c
+        command: LAB_HOME=$(pwd) bash test/test.sh hello
+        timeout: 10
+        max-score: 4
+    - name: count
+      id: count
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: count
+        setup-command: git pull; rm -rf test; git clone https://github.com/KNU-ELEC462/lab3-test.git
+          test;  sudo rm -f xv6-riscv/user/test_sc.c; cp test/userprog/test_sc.c xv6-riscv/user/test_sc.c
+        command: LAB_HOME=$(pwd) bash test/test.sh count
+        timeout: 10
+        max-score: 6
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        SETUP_RESULTS: "${{steps.setup.outputs.result}}"
+        HELLO_RESULTS: "${{steps.hello.outputs.result}}"
+        COUNT_RESULTS: "${{steps.count.outputs.result}}"
+      with:
+        runners: setup,hello,count
